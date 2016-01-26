@@ -1,0 +1,95 @@
+HTTPS and Go?
+25 Jan 2015
+Tags: go golang 
+
+
+Varun Kumar
+Software Engineer @ MediaMath
+http://varunksaini.com/
+@varunksaini
+
+* whoami
+- Software Engineer @ MediaMath
+- Doing golang from last one year
+
+.image mmlogo.png _ 300
+
+* Let's talk about HTTPS server in Go 
+
+.image yunohttps.jpg _ 700
+
+* But first, What's Go?
+
+* Go is...
+
+"an open source programming language that makes it easy to build simple, reliable, and efficient software."
+
+.link https://golang.org golang.org
+
+.image golangeverywhere.jpg _ 400
+
+* With Go...
+
+you code less, compile quicker, and execute faster -> have more fun! 
+
+.play hello.go
+
+* Writing http server is one of the first thing you will learn as Go Programmer
+
+.play helloserver/server.go
+
+* This is all good, but what if we want to serve encrypted traffic via https
+
+* Go standard library has us covered there too..
+
+- Replace "http.ListenAndServe(":8080", nil) with "http.ListenAndServeTLS(":8081", "cert.pem", "key.pem", nil)
+- Done and happy Gopher…
+- Not so fast…
+- Did you notice we need two more things to serve HTTPS
+- Yes, cert.pem and key.pem
+
+* What is cert.pem and key.pem
+
+PEM(Privacy Enhanced Mail) is failed method for secure email but lived as an SSL container format. 
+
+- cert.pem - is the path to server certificate in PEM format
+- key.pem - is the path to server private key in PEM format
+
+* How do we get cert.pem and key.pem
+
+We can get self-signed cert and key in multiple ways, some of them are: 
+
+- OpenSSL
+	openssl req -x509 -newkey rsa:2048 -keyout key.pem -out cert.pem -days 365 
+- Go (generate_cert.go) - https://golang.org/src/crypto/tls/generate_cert.go
+
+These certs are fine for testing, but for running a production Server, We 
+need a certificate signed by an authority that's trusted by browsers and operating Systems.
+
+* Some popular certificate authorities
+
+- GoDaddy
+- Comodo
+- Symantec
+- Let's Encrypt - Free
+
+* What about handling HTTP connections
+
+We have HTTPS server running and it is handling the requests securely. 
+But what about http request, We don't have an HTTP server, how do we 
+handle them.
+
+* There are ways to handle both HTTP and HTTPS requests.
+
+* 1. running both HTTP and HTTPS server
+
+.code -numbers httpsserver1/server2.go
+
+* 2. Redirect from HTTP to HTTPS
+
+.code -numbers httpsserver2/server3.go
+
+* Happy Gophers
+
+.image gophers5th.jpg _ 800
+.caption _Gopher_ by [[http://www.reneefrench.com][Renée French]]
