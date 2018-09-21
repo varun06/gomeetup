@@ -1,0 +1,442 @@
+Future of dependency management in Go - Go Modules
+20 September 2018
+Tags: go golang dependency management modules
+
+Varun Kumar
+Programmer @ MediaMath
+http://varunksaini.com/
+@varunksaini
+
+* What is depedency management?
+
+Dependency management is a technique for declaring, resolving and using dependencies required by the project in an automated fashion.
+
+* History of dependency management in Go
+
+- Initial Go release in 2009 was a compiler, linker, and some libraries
+- Makefiles were used to compile and link
+- "goinstall" was proposed in 2010 to download packages from source control repositories
+- Goinstall introduced the import path conventions
+- Goinstall also eliminated makefiles
+- "go command" was released in December 2011
+- "go command" replaced "go install" with "go get"
+- "go get" has been popular but missing any concept of versioning
+- When "go get" needs a package, it always fetches the latest copy of the package
+
+* What is missing from "go get"
+
+There are two main things that are missing from go get to make it a proper dependency manager.
+
+What are those? Any guesses.....
+
+* Versioning 
+
+Without versioning, go get cannot convey to users any expectations about what kinds of changes to expect in a given update.
+
+.link https://golang.org/doc/faq#get_version
+
+* Semantic Versioning
+
+While we are talking about versioning, let's talk about semantic versioning, it is going to be helpful as we move forward.
+
+.link https://semver.org/ Semantic versioning 
+is a useful way to frame expectations about the relationships between releases.
+
+Given a version number MAJOR.MINOR.PATCH, increment the:
+
+- MAJOR version when you make incompatible API changes,
+- MINOR version when you add functionality in a backwards-compatible manner, and
+- PATCH version when you make backwards-compatible bug fixes.
+
+Additional labels for pre-release and build metadata are available as extensions to the MAJOR.MINOR.PATCH format.
+
+Example - Updating from 1.2.3 to 1.2.4 should not break your code, while updating from 1.2.3 to 2.0.0 may. 
+
+* API stability and versioning
+
+In March 2014, Gustavo Niemeyer created gopkg.in, advertising “stable APIs for the Go language.”(version-aware GitHub redirector)
+
+Import paths like gopkg.in/yaml.v1 and gopkg.in/yaml.v2 refer to different commits
+
+Following semantic versioning, authors are expected to introduce a new major version when making a breaking change, so that later versions of a v1 import path can be expected to be drop-in replacements for earlier ones, while a v2 import path may be a completely different API.
+
+In August 2015, Dave Cheney filed a proposal to adopt semantic versioning.
+
+* Hyrum's law
+
+this is a great time to mention Hyrum's law, which states:
+
+	With a sufficient number of users of an API, it does not matter what you promise in the contract. 
+	All observable behaviors of your system will be depended on by somebody.
+
+* Reproducible builds
+
+The second significant shortcoming of go get is that, without a concept of versioning, it cannot ensure or even express the idea of a reproducible build. 
+
+There is no way to be sure that your users are compiling the same versions of your code's dependencies that you did.
+
+How do we solve the reproducible build problem? 
+
+* Vendoring 
+
+In November 2013, the Go 1.2 FAQ also added this basic advice:
+
+	If you're using an externally supplied package and worry that it might change in unexpected ways, 
+	the simplest solution is to copy it to your local. 
+
+Flurry of tools to automate this process, such as -
+
+- goven(March 2012)
+- godep(September 2013)
+- gb(April 2015)
+- and many more...
+
+In June 2015, Go Team added Go 1.5 vendor experiment, optional in Go 1.5 and enabled by default in Go 1.6. 
+
+* Dep - Official package management experiment
+
+That takes us to dep.
+
+.link https://github.com/golang/dep
+
+dep served many purposes: it was an important improvement over current practice in go dependency management saga and it was an important step toward a solution. It was called an “official experiment”.
+
+Note: We know the story after this :)
+
+* Future - Go Modules
+
+Go 1.11 has preliminary support for versioned modules. 
+
+Go modules are an experimental opt-in feature in Go 1.11, with the hope of incorporating feedback and finalizing the feature for Go 1.12. 
+
+Note: Even though the details may change based on feedback, future releases will support modules defined using Go 1.11 or vgo.
+
+* Installing and Activating Module Support
+
+- Install the latest Go 1.11
+- install the Go toolchain from source on Go master branch
+
+Once installed, module support can be activated in one of two ways:
+
+- Invoke the go command in a directory outside of the $GOPATH/src tree, with a valid go.mod file in the current directory or any parent of it and the environment variable GO111MODULE unset (or explicitly set to auto).
+- Invoke the go command with GO111MODULE=on in the command environment.
+
+* What is a Module
+
+A module is a collection of related Go packages that are versioned together as a single unit. 
+
+Modules record precise dependency requirements and create reproducible builds.
+
+Modules must be semantically versioned in the form v(major).(minor).(patch), such as v0.1.0, v1.2.3, or v3.0.1. 
+
+The leading v is required. 
+
+Note: Public and private module repositories and proxies are becoming available. 
+
+* go.mod
+
+A module is defined by a tree of Go source files with a go.mod file in the tree's root directory. 
+
+Module source code may be located outside of GOPATH - Huggeee
+
+
+Here is an example go.mod file:
+
+	module github.com/my/module/v3
+
+	require (
+	    github.com/some/dependency v1.2.3
+	    github.com/another/dependency v0.1.0
+	    github.com/additional/dependency/v4 v4.0.0
+	)
+
+All of the packages in a module share a common prefix -- the module path. The go.mod file defines the module path via the module directive.
+
+* Importing packages in code
+
+In Go source code, packages are imported using the full path including the module, for example:
+
+import "example.com/my/module/v2/pkg/foo" to import foo from the v2 version of module example.com/my/module.
+
+* Version Selection
+
+If you add a new import to your source code that is not yet covered by a require in go.mod, any go command run (e.g., 'go build') will automatically look up the proper module and add the highest version of that new direct dependency to your module's go.mod as a require directive. 
+
+For example, if your new import corresponds to dependency M whose latest tagged release version is v1.2.3, your module's go.mod will end up with require M v1.2.3, which indicates module M is a dependency with allowed version >= v1.2.3 (and < v2, given v2 is considered incompatible with v1).
+
+* Minimal Version Selection
+
+The minimal version selection algorithm is used to select the versions of all modules used in a build. 
+
+.link https://research.swtch.com/vgo-mvs 
+
+As an example, if your module depends on module A which has a require D v1.0.0, and your module also depends on module B which has a require D v1.1.1, then minimal version selection would choose v1.1.1 of D to include in the build (given it is the highest listed require version). This selection of v1.1.1 remains consistent even if some time later a v1.2.0 of D becomes available. This is an example of how the modules system provides 100% reproducible builds. When ready, the module author or user might choose to upgrade to the latest available version of D or choose an explicit version for D.
+
+* Semantic Import Versioning
+
+"If an old package and a new package have the same import path, the new package must be backwards compatible with the old package."
+
+Semantic versioning requires a major version change when a v1 or higher package makes a backwards incompatible change. 
+
+The result of following both the import compatibility rule and semantic versioning is called semantic import versioning.
+
+In general, packages with different import paths (e.g., due to different major versions) are different packages.
+
+* Compatibility with old Go versions
+
+Go versions 1.9.7+, 1.10.3+ and 1.11 have been updated so that code built with those releases can properly consume v2+ modules without requiring modification of pre-existing code. 
+
+* How to use Go Mod
+
+Make sure you have Go 1.11 installed.
+
+* Creating a Module
+
+Let's create our package, we will call in "modtest"
+
+	$ mkdir modtest
+	$ cd modtest
+
+* Add some code
+
+	package modtest
+
+	import "fmt"
+
+	func Hello(name string) string {
+	   return fmt.Sprintf("Hello, %s", name)
+	}
+
+* It is not a module yet. Let's change that.
+
+	$ go mod init github.com/varun06/modtest
+	go: creating new go.mod: module github.com/varun06/modtest
+
+This creates a new file name "go.mod" in package directory.
+
+	$ cat go.mod
+	module github.com/varun06/modtest
+
+Note :  this directory should be outside your $GOPATH because by default, the modules support is disabled inside it.
+
+* publish module to source control
+
+Let's push the code to a git repository
+
+	$ git init
+	$ git add *
+	$ git commit -am "First commit"
+	$ git push -u origin master
+
+code is on github and anyone can "go get" it. But there is still something that we need to do and that's what modules aim to fix.
+
+* Versioning
+
+Our package is ready and we can release it to world.
+
+	$ git tag v1.0.0
+	$ git push --tags
+
+This create a tag for release 1.0.0
+
+While we are at it, let's create a v1 branch too.
+
+	$ git checkout -b v1
+	$ git push -u origin v1
+
+* Using our module
+
+Time to use our module in some real code :)
+
+	package main
+
+	import (
+	    "fmt"
+
+	    "github.com/varun06/modtest"
+	)
+
+	func main() {
+	    fmt.Println(modtest.Hello("gopher"))
+	}
+
+before Go1.11, we would do "go get github.com/varun06/modtest" to download package, but it is different with modules.
+
+* With Go1.11
+
+	$ go mod init test
+
+This will create a new "go.mod" files with module name "test"
+
+
+	$ cat go.mod
+	module test
+
+* Time to build our program.
+
+	$ go build
+	go: finding github.com/varun06/modtest v1.0.0
+	go: downloading github.com/varun06/modtest v1.0.0
+
+go command automatically fetches the packages imported by program.
+
+	$ cat go.mod
+	module test
+	require github.com/varun06/modtest v1.0.0 
+
+* Go sum
+
+We also get a new file named "go.sum" in package directory
+
+	$ cat go.sum
+	github.com/varun06/modtest v1.0.0 h1:9EdH0EArQ/rkpss9Tj8gUnwx3w5p0jkzJrd5tRAhxnA=
+	github.com/varun06/modtest v1.0.0/go.mod h1:UVhi5McON8ZLc5kl5iN2bTXlL8ylcxE9VInV71RrlO8=
+
+go.sum file contains the hashes of the packages
+
+* What about bugfix release
+
+Someone finds a bug a opens an issue. We fix the issue and push it to github.
+
+	$ git commit -m "fixed the bug" modtest.go
+	$ git tag v1.0.1
+	$ git push --tags origin v1
+
+* Updating modules after new package release
+
+When using go modules, Go will not update modules without being asked. This is by design for reproducible builds. To update modules
+we can do following:
+
+- run "go get -u" to use the latest minor or patch release
+- run "go get -u=patch" to use the latest patch release(i.e would update to 1.0.1 but not 1.0.0)
+- run "go get package@version" to update to a specific version
+
+If you noticed above, there is no way to update to latest version.
+
+"go.mod" will change after this.
+	
+	$ cat go.mod
+	module test
+	require github.com/varun06/modtest v1.0.1
+
+* What about Major versions
+
+As we know, a major version is different from minor in semantic version semantics.
+
+	package modtest
+
+	import (
+	    "errors"
+	    "fmt"
+	)
+
+	func Hello(name, lang string) (string, error) {
+	    switch lang {
+	    case "en":
+		return fmt.Sprintf("Hi, %s!", name), nil
+	    case "pt":
+		return fmt.Sprintf("Oi, %s!", name), nil
+	    case "es":
+		return fmt.Sprintf("¡Hola, %s!", name), nil
+	    case "fr":
+		return fmt.Sprintf("Bonjour, %s!", name), nil
+	    default:
+		return "", errors.New("unknown language")
+	    }
+	}
+
+* We broke API
+
+With this change, existing software using our API will break. So we should change the import path.
+
+	$ git commit modtest.go -m "Change Hello to allow multilang"
+	$ git checkout -b v2 # optional but recommended
+	$ echo "module github.com/varun06/modtest/v2" > go.mod
+	$ git commit go.mod -m "Bump version to v2"
+	$ git tag v2.0.0
+	$ git push --tags origin v2 # or master if we don't have a branch
+
+* Update to major versions
+
+Even though we have released a new incompatible version of our library, existing software will not break, because it will keep using the existing 1.0.1.
+
+* Time to upgrade
+
+At some point, if we want to upgrade to version 2.0.0, we do that by modifying the program:
+
+	package main
+
+	import (
+	    "fmt"
+	    "github.com/varun06/modtest/v2"
+	)
+
+	func main() {
+	    g, err := modtest.Hello("gopher", "pt")
+	    if err != nil {
+		panic(err)
+	    }
+	    fmt.Println(g)
+	}
+
+After this, we run "go build", and it will fetch version 2.0.0 for us. As we know major versions are totally different packages, we can use two incompatible versions in the same program:
+
+	package main
+	import (
+	    "fmt"
+	    "github.com/varun06/modtest"
+	    modtest "github.com/varun06/modtest/v2"
+	)
+
+	func main() {
+	    fmt.Println(modtest.Hello("gopher"))
+	    g, err := modtest.Hello("gopher", "pt")
+	    if err != nil {
+		panic(err)
+	    }
+	    fmt.Println(g)
+	}
+
+* Tidying modules
+
+By default, Go does not remove a dependency from "go.mod". If you want to remove unwanted dependencies, use "tidy" command.
+
+	$ go mod tidy
+
+* Vendoring
+
+Go modules ignored the "vendor" directory by default. If we want to vendor our dependencies, we can do following:
+
+	$ go mod vendor
+
+This will create a "vendor" directory under root for our project.
+
+"go build" will still ignore the contents of vendor directory. If we want to build dependencies from vendor directory, we have to do following:
+
+	$ go build -mod vendor
+
+^^ is great for running with CI.
+
+* vendoring vs proxy
+
+There seems to be a desire to replace vendoring with something(such a proxy). 
+
+We can set proxy by setting GOPROXY environment variable.
+
+	export GOPROXY=http://gproxy.mycompany.local:8080
+
+We can also set the GOPROXY to use a directory instead of a webserver.
+
+	export GOPROXY=file://home/varun06/dev/go-proxy-test
+
+There is a project called Athens that is building a proxy and that aims — if I don’t misunderstand it — to create a central repository of packages à la npm.
+
+.link https://github.com/gomods/athens
+
+* References
+
+.link https://github.com/golang/proposal/blob/master/design/24301-versioned-go.md
+.link https://www.youtube.com/watch?v=F8nrpe0XWRg&list=PLq2Nv-Sh8EbbIjQgDzapOFeVfv5bGOoPE&index=3&t=0s
+.link https://research.swtch.com/vgo 
+
+* Questions?
