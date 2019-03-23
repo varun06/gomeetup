@@ -1,9 +1,9 @@
 Monitoring, Observability and Prometheus - Go chicago meetup
-21 March 2019
+28 March 2019
 Tags: go golang prometheus monitoring
 
 Varun Kumar
-Developer @ MediaMath
+Programmer
 http://varunksaini.com/
 
 * What is monitroing
@@ -14,7 +14,7 @@ When I type “monitoring” into a search engine, the first two results that co
 
 — maintain regular surveillance over.
 
-But monitoring is more than that, it is about failure and humans.
+* But monitoring is more than that, it is about failure and humans.
 
 We monitored something because we expected it to fail in a specific manner and we wanted to know when it fails. But as applications are getting more complex, this "explicit, predictable failure" centric approach to monitoring becomes a problem.
 
@@ -40,3 +40,62 @@ Observability is not a substitute for monitoring, nor does it obviate the need f
 Observability is a superset of monitoring. It provides not only high-level over‐ views of the system’s health but also highly granular insights into the implicit fail‐ ure modes of the system.
 
 * What is Prometheus
+
+- Prometheues is an open source systems monitoring and alerting system.
+- Prometheus was originally developed at SoundCloud in 2012.
+- Promethues is a stand alone open source project now.
+- Prometheus joined CNCF(Cloud Native Computing Foundation) in 2016.
+	
+* Prometheus features
+
+- A multi-dimensional data model with time series data identified by metric name and key/value pairs
+- PromQL, a flexible query language to leverage this dimensionality
+- No reliance on distributed storage; single server nodes are autonomous
+- Time series collection happens via a pull model over HTTP
+- Pushing time series is supported via an intermediary gateway
+- Targets are discovered via service discovery or static configuration
+- Multiple modes of graphing and dashboarding support
+
+* Prometheus Components
+
+- The main Prometheus Server which scrapes and stores time series data
+- Client libraries for instrumenting application code
+- A push gateway for supporting short-lived jobs
+- Special-purpose exporters for services like HAProxy, StatsD, Graphite, etc.
+- An alertmanager to handle alerts
+
+Most Prometheus components are written in Go, making them easy to build and deploy as static binaries.
+
+* Prometheus Architecure
+
+.image img/prom.png 500 800
+
+* Prometheus Node Exporter
+
+The Prometheus Node Exporter exposes a wide variety of hardware- and kernel-related metrics.
+
+Some popular node exporter metrics are -
+
+- CPU
+- FileSystem
+- Meminfo
+- Etc
+
+Note - Node exporter work for *nix systems, but there is WMI exporter for windows systems.
+
+* Instrumenting a go application with Prometheus
+
+Prometheus has an official Go client library. We are going to use prometheus go client to instrument a simple go app.
+First we have to download Prometheus go client -
+
+```
+	go get github.com/prometheus/client_golang/prometheus
+	go get github.com/prometheus/client_golang/prometheus/promauto
+	go get github.com/prometheus/client_golang/prometheus/promhttp
+```
+
+
+* Expose metrics 
+To expose Prometheus metrics in a Go application, you need to provide a */metrics* HTTP endpoint. You can use the prometheus/promhttp library's HTTP Handler as the handler function.
+
+.code first.go
