@@ -1,0 +1,42 @@
+Monitoring, Observability and Prometheus - Go chicago meetup
+21 March 2019
+Tags: go golang prometheus monitoring
+
+Varun Kumar
+Developer @ MediaMath
+http://varunksaini.com/
+
+* What is monitroing
+
+When I type “monitoring” into a search engine, the first two results that come up are the following:
+
+— observe and check the progress or quality of (something) over a period of time; keep under systematic review.
+
+— maintain regular surveillance over.
+
+But monitoring is more than that, it is about failure and humans.
+
+We monitored something because we expected it to fail in a specific manner and we wanted to know when it fails. But as applications are getting more complex, this "explicit, predictable failure" centric approach to monitoring becomes a problem.
+
+That bring us to second aspect of monitoring, that is human centric. When something go wrong with our system, there are consquences. Consequences that need human intervention. Even with today's more automated systems, humans are still part of the equation.
+
+So Monitoring is as much about failure as it is about humans.
+
+* What is observability
+
+Observability might mean different things to different people. For some, it's about logs, metrics, and traces. For others, it's monitoring in a new dress. But main theme of observability remains the same - bringing better visibility into systems.
+
+* Observability is not just about logs, metrics, and traces
+
+Logs, metrics, and traces are useful tools that help with testing, under‐ standing, and debugging systems. However, it’s important to note that plainly having logs, metrics, and traces does not result in observable systems
+
+An observable system isn’t achieved by plainly having monitoring in place, nor is it achieved by having an SRE team carefully deploy and operate it.
+Observability is a feature that needs to be enshrined into a system at the time of system design
+
+* Difference between monitoring and observability
+
+Observability is not a substitute for monitoring, nor does it obviate the need for monitoring, monitoring and observability are complimentary to each other.
+
+Observability is a superset of monitoring. It provides not only high-level over‐ views of the system’s health but also highly granular insights into the implicit fail‐ ure modes of the system.
+
+* What is Prometheus
