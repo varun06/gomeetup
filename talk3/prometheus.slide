@@ -45,10 +45,31 @@ Observability is a superset of monitoring. It provides not only high-level over�
 - Prometheus was originally developed at SoundCloud in 2012.
 - Promethues is a stand alone open source project now.
 - Prometheus joined CNCF(Cloud Native Computing Foundation) in 2016.
+- Prometheus data model is *time series* 
+
+* But what is time series?
+
+time-series data is a sequence of data points, measuring the same thing over time, stored in time order.
+
+We can also think of it as a series of numeric values, each paired with a timestamp, defined by a name and a set of labeled dimensions or tags(that's what prometheus does). 
+
+.image img/ts.png 300 900
+.caption NYC taxi rides for the first few seconds of 2018. Source: NYC.gov
+
+* What is Metric
+
+Metrics are a numeric representation of data measured over intervals of time.
+
+A metric in Prometheus is identified using both the metric name and the labels. The actual data stored in the time series is called a sample, and it consists of two components: a float64 value and a millisecond precision timestamp.
+
+.image img/metric.png 200 400
+.caption A Prometheus metric sample
+
+It’s important to bear in mind that metrics in Prometheus are immutable. Chang‐ ing the name of the metric or adding or removing a label will result in a new time series.
 	
 * Prometheus features
 
-- A multi-dimensional data model with time series data identified by metric name and key/value pairs
+- A multi-dimensional data model with *time series* data identified by metric name and key/value pairs
 - PromQL, a flexible query language to leverage this dimensionality
 - No reliance on distributed storage; single server nodes are autonomous
 - Time series collection happens via a pull model over HTTP
@@ -99,3 +120,54 @@ First we have to download Prometheus go client -
 To expose Prometheus metrics in a Go application, you need to provide a */metrics* HTTP endpoint. You can use the prometheus/promhttp library's HTTP Handler as the handler function.
 
 .code first.go
+
+* Prometheus data model
+
+Prometheus fundamentally stores all data as time series: streams of timestamped values belonging to the same metric and the same set of labeled dimensions. Besides stored time series, Prometheus may generate temporary derived time series as the result of queries.
+
+Every time series is uniquely identified by its metric name and a set of key-value pairs, also known as labels.
+
+example time series - 
+`api_http_requests_total{method="POST", handler="/messages"}`
+
+* Prometheus metric types
+
+Prometheus offers 4 core metric types.
+
+- counter
+- gauge
+- histogram
+- summary
+
+* Counter
+
+A counter is a cumulative metric that represents a single monotonically increasing counter whose value can only increase or be reset to zero on restart.
+
+Don't use counter for values that can decrease.
+
+* Gauge
+
+Gauge represents a single value that can go up and down.
+
+Gauges are typically used for measured values like temperatures or current memory usage, but also "counts" that can go up and down, like the number of concurrent requests.
+
+* Histogram
+
+A histogram samples observations (usually things like request durations or response sizes) and counts them in configurable buckets. It also provides a sum of all observed values.
+
+A histogram with a base metric name of <basename> exposes multiple time series during a scrape:
+
+cumulative counters for the observation buckets, exposed as <basename>_bucket{le="<upper inclusive bound>"}
+the total sum of all observed values, exposed as <basename>_sum
+the count of events that have been observed, exposed as <basename>_count (identical to <basename>_bucket{le="+Inf"} above)
+Use the histogram_quantile() function to calculate quantiles from histograms or even aggregations of histograms. 
+
+* Summary
+
+Similar to a histogram, a summary samples observations (usually things like request durations and response sizes). While it also provides a total count of observations and a sum of all observed values, it calculates configurable quantiles over a sliding time window.
+
+A summary with a base metric name of <basename> exposes multiple time series during a scrape:
+
+streaming φ-quantiles (0 ≤ φ ≤ 1) of observed events, exposed as <basename>{quantile="<φ>"}
+the total sum of all observed values, exposed as <basename>_sum
+the count of events that have been observed, exposed as <basename>_count
