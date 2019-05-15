@@ -1,27 +1,14 @@
-Monitoring, Observability and Prometheus - Go Chicago meetup
-28 March 2019
-Tags: go golang prometheus monitoring
+Monitoring, Observability and Prometheus
+15 May 2019
+Tags: go golang prometheus monitoring meetup
 
 Varun Kumar
-Programmer
+Software Developer
 http://varunksaini.com/
-
-* Announcements
-
-- Thanks Enova for hosting meetup today
-- go survey 2018 results
-.link https://golang.org/survey2018-results
-- Gophercon Europe (Tenerife form the 30th of May until the 1st of June)
-- Hackathons
-.link https://oktane19-hackathon.devpost.com/
-.link https://appian.devpost.com/ 
-.link https://awseducate.devpost.com/
-
-* Monitoring Yes?How?What
 
 * What is monitroing
 
-Type “monitoring” into a search engine, the first two results that come up are following:
+When you type “monitoring” into a search engine, the first two results that come up are following:
 
 — observe and check the progress or quality of (something) over a period of time; keep under systematic review.
 
@@ -29,41 +16,49 @@ Type “monitoring” into a search engine, the first two results that come up a
 
 * But monitoring is more than that, it is about failure and humans.
 
-We monitor something because we expect it to fail in a specific manner and we want to know when it fails. But as applications get more complex, this "explicit, predictable failure" centric approach to monitoring becomes a problem.
+- We monitor something because we expect it to fail in a specific manner and we want to know when it fails. 
 
-Second aspect of monitoring is human aspect. When something go wrong with our system, we need human intervention. Even with today's automated systems, humans are still part of the equation.
+: First note - But as applications get more complex, this "explicit, predictable failure" centric approach to monitoring becomes a problem.
+
+- Second aspect of monitoring is human aspect. 
+
+: Second note -  When something go wrong with our system, we need human intervention. Even with today's automated systems, humans are still part of the equation.
 
 So Monitoring is as much about failure as it is about humans.
 
 * What is observability
 
-Observability might mean different things to different people.  For some, it's about logs, metrics, and traces. For others, it's still monitoring but in a new dress. But main theme of observability remains the same - bringing better visibility into systems.
+Observability might mean different things to different people.  
+
+: For some, it's about logs, metrics, and traces. For others, it's still monitoring but in a new dress. But main theme of observability remains the same - bringing better visibility into systems.
 
 * Observability is not just about logs, metrics, and traces
 
-Logs, metrics, and traces are useful tools that help with testing, understanding, and debugging systems. However, it’s important to note that having logs, metrics, and traces does not result in an observable systems
+: Logs, metrics, and traces are useful tools that help with testing, understanding, and debugging systems. However, it’s important to note that having logs, metrics, and traces does not result in an observable systems
 
-An observable system isn’t achieved by having monitoring in place, nor is it achieved by having an SRE team deploy and operate it.
+: An observable system isn’t achieved by having monitoring in place, nor is it achieved by having an SRE team deploy and operate it.
 
-Observability is a feature that needs to be enshrined into a system at the time of system design
+: Observability is a feature that needs to be enshrined into a system at the time of system design
 
-I call it ODD -> Observability driven design :)
+* ODD -> Observability driven design :)
 
 * Difference between monitoring and observability
 
 Observability is not a substitute for monitoring, nor does it obviate the need for monitoring, monitoring and observability are complimentary to each other.
 
-Observability is a superset of monitoring. It provides not only high-level overviews of the system’s health but also highly granular insights into the implicit failure modes of the system.
+: The way I think of it is, Observability is a superset of monitoring. It provides not only high-level overviews of the system’s health but also highly granular insights into the implicit failure modes of the system.
 
 * What is Prometheus
 
-Prometheues is an open source systems monitoring and alerting system with a time series data model. Prometheus was originally developed at SoundCloud in 2012. Prometheus joined CNCF(Cloud Native Computing Foundation) in 2016.
+Prometheus is an open source systems monitoring and alerting system with a time series data model. 
+
+: Prometheus was originally developed at SoundCloud in 2012. Prometheus joined CNCF(Cloud Native Computing Foundation) in 2016.
 
 * But what is time series?
 
 time-series data is a sequence of data points, measuring the same thing over time, stored in time order.
 
-We can also think of it as a series of numeric values, each paired with a timestamp, defined by a name and a set of labeled dimensions or tags(that's what prometheus does). 
+: We can also think of it as a series of numeric values, each paired with a timestamp, defined by a name and a set of labeled dimensions or tags(that's what Prometheus does). 
 
 .image img/ts.png 300 900
 .caption NYC taxi rides for the first few seconds of 2018. Source: NYC.gov
@@ -72,16 +67,16 @@ We can also think of it as a series of numeric values, each paired with a timest
 
 Metrics are a numeric representation of data measured over intervals of time.
 
-A metric in Prometheus is identified using both the metric name and the labels. The actual data stored in the time series is called a sample, and it consists of two components: a float64 value and a millisecond precision timestamp.
+: A metric in Prometheus is identified using both the metric name and the labels. The actual data stored in the time series is called a sample, and it consists of two components: a float64 value and a millisecond precision timestamp.
 
 .image img/metric.png 200 400
 .caption A Prometheus metric sample
 
-It’s important to bear in mind that metrics in Prometheus are immutable. Changing the name of the metric or adding or removing a label will result in a new time series.
+: It’s important to bear in mind that metrics in Prometheus are immutable. Changing the name of the metric or adding or removing a label will result in a new time series.
 	
 * Prometheus features
 
-- A multi-dimensional data model with *time series* data identified by metric name and key/value pairs
+- A multi-dimensional data model with time series data identified by metric name and key/value pairs
 - PromQL, a flexible query language to leverage this dimensionality
 - No reliance on distributed storage; single server nodes are autonomous
 - Time series collection happens via a pull model over HTTP
@@ -97,11 +92,12 @@ It’s important to bear in mind that metrics in Prometheus are immutable. Chang
 - Special-purpose exporters for services like HAProxy, StatsD, Graphite, etc.
 - An alertmanager to handle alerts
 
-Most Prometheus components are written in Go, making them easy to build and deploy as static binaries.
+: Most Prometheus components are written in Go, making them easy to build and deploy as static binaries.
 
 * Prometheus Architecure
 
 .image img/prom.png 500 800
+.caption https://prometheus.io/docs/introduction/overview/
 
 * Prometheus Node Exporter
 
@@ -114,11 +110,11 @@ Some popular node exporter metrics are -
 - Meminfo
 - Etc
 
-Node exporter work for *nix systems, but there is WMI exporter for windows systems.
+: Node exporter work for *nix systems, but there is WMI(Windows Management Instrumentation) exporter for windows systems.
 
 * Instrumenting a go application with Prometheus
 
-Prometheus has an official Go client library. We are going to use prometheus go client to instrument a simple go app.
+Prometheus has an official Go client library. We are going to use Prometheus go client to instrument a simple go app.
 
 First we have to download Prometheus go client -
 
@@ -127,19 +123,21 @@ First we have to download Prometheus go client -
 	$ go get github.com/prometheus/client_golang/prometheus/promhttp
 
 * Expose metrics 
-To expose Prometheus metrics in a Go application, you need to provide a */metrics* HTTP endpoint. You can use the prometheus/promhttp library's HTTP Handler as the handler function.
+To expose Prometheus metrics in a Go application, you need to provide a `/metrics` HTTP endpoint. You can use the prometheus/promhttp library's HTTP Handler as the handler function.
 
 .code first.go
 
 * Prometheus data model
 
-Prometheus fundamentally stores all data as time series: streams of timestamped values belonging to the same metric and the same set of labeled dimensions. Besides stored time series, Prometheus may generate temporary derived time series as the result of queries.
+Prometheus fundamentally stores all data as time series
 
-Every time series is uniquely identified by its metric name and a set of key-value pairs, also known as labels.
+: streams of timestamped values belonging to the same metric and the same set of labeled dimensions. Besides stored time series, Prometheus may generate temporary derived time series as the result of queries.
 
 example time series - 
 
   api_http_requests_total{method="POST", handler="/messages"}
+
+Every time series is uniquely identified by its metric name and a set of key-value pairs, also known as labels.
 
 * Prometheus metric types
 
@@ -154,39 +152,32 @@ Prometheus offers 4 core metric types.
 
 A counter is a cumulative metric that represents a single monotonically increasing counter whose value can only increase or be reset to zero on restart.
 
-Don't use counter for values that can decrease.
+Example - number of requests served, tasks completed, or errors.
+
+: Don't use counter for values that can decrease.
 
 * Gauge
 
 Gauge represents a single value that can go up and down.
 
-Gauges are typically used for measured values like temperatures or current memory usage, but also "counts" that can go up and down, like the number of concurrent requests.
+Example - Gauges are typically used for measured values like temperatures or current memory usage, but also "counts" that can go up and down, like the number of concurrent requests.
+
+: Gauges are typically used for measured values like temperatures or current memory usage, but also "counts" that can go up and down, like the number of concurrent requests.
 
 * Histogram
 
 A histogram samples observations (usually things like request durations or response sizes) and counts them in configurable buckets. It also provides a sum of all observed values.
 
-Use the histogram_quantile() function to calculate quantiles from histograms or even aggregations of histograms. 
+: Use the histogram_quantile() function to calculate quantiles from histograms or even aggregations of histograms. 
 
 * Summary
 
-Similar to a histogram, a summary samples observations (usually things like request durations and response sizes). While it also provides a total count of observations and a sum of all observed values, it calculates configurable quantiles over a sliding time window.
+Similar to a histogram, a summary samples observations (usually things like request durations and response sizes). 
 
-* Comparisons to alternatives
-
-- Prometheus vs. Graphite
-
-- Prometheus vs. InfluxDB
-
-- Prometheus vs. OpenTSDB
-
-- Prometheus vs. Nagios
-
-- Prometheus vs. Sensu
-
-.link https://prometheus.io/docs/introduction/comparison/ More on above comparisons
+: While it also provides a total count of observations and a sum of all observed values, it calculates configurable quantiles over a sliding time window.
 
 * References
 
 .link prometheus.io Prometheus Official website
+.link github.com/prometheusio/prometheus
 .link https://medium.com/@copyconstruct/monitoring-and-observability-8417d1952e1c Monitoring and Observability By Cindy Sridharan
