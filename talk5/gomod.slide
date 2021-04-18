@@ -1,0 +1,126 @@
+Moving to go modules
+17 April 2021
+Tags: go golang meetup
+
+Varun Kumar
+Staff Software Developer
+Walmart Global Tech
+http://varunksaini.com/
+
+* Go at Walmart
+
+- Go is used at edge and many other places in Walmart
+- Edge Foundation - CDN and Proxies
+- There are more than 400 repositories in our github organization
+
+.image gomod/img/team.png
+
+* Quirks before go modules
+
+- Most of code in one single repo
+- Module incompatible import paths("torbit/foo)
+- Big utilities packages that are shared around teams 
+- Forks of popular open source repositories
+- Mix of monorepo and multirepo
+
+.code gomod/oldimport.go
+
+* Custom dependency manager tool - tbget
+
+- Clone repository locally
+- Run tbget ./... to fetch dependencies and store them in gopath
+- Make changes and test/build
+
+.image gomod/img/tbget.png 400 800
+
+* Problems with Monorepo
+
+- House of 10-12 critical services in edge foundation
+- No clear ownership across services
+- Slow builds because of lack of tooling and huge number of tests(15-20 minutes to run a build)
+- Big surface area for failures and issues
+
+* Deconstructing the Monorepo
+
+.image gomod/img/construction.png 500 500
+.caption I costruttori by Massimo Campigli
+
+* Form a team
+
+- Form a team of like minded people, 
+- Glad I found Pedro, Troy and few other folks who helped with this task
+- Break the problem in small and manageable chunks
+- Move go repositories to go modules one by one
+
+.image gomod/img/pedro.png 150 150
+.image gomod/img/troy.png 150 150
+
+* Find your go dependency and packages
+
+.link https://github.com/loov/goda
+
+.image gomod/img/gooda.png 500 900
+
+* For packages that need to move out
+
+- Create a repository and go module if required
+- Change imports(from torbit/fsnotify -> github.com/fsnotify/fsnotify) 
+- Make pull requests
+- Find a suitable time to make a change(Code freeze for us)
+- Success
+
+.image gomod/img/success.gif
+
+* How about git history
+
+- Commit messages and history should be preserved
+- git-filter-repo can refactor directories and rewrite git histories
+    git filter-repo --path src/ --to-subdirectory-filter my-module --tag-rename '':'my-module-'
+
+.link https://github.com/newren/git-filter-repo
+
+* What about technical debt
+
+- We tried to pay tech debt where it was okay
+- My suggestion is to keep it simple
+- linting/vetting is easy to get done in same cycle
+- but keep them in different pull requests
+
+* Final(ish) Pull Request
+
+.image gomod/img/big-pr.png 500 900
+
+* Improvements
+
+- only `go` and `git` required to start developing
+- Trade homegrown dependency management with *go modules*
+- No need to learn a custom tool to manage dependencies
+- Fewer failures in builds 
+- Faster builds because of small surface area
+- Clear line of ownership across teams and projects
+
+* Lessons learned
+
+- Properly manage external dependencies
+- Stay away from kitchen sink or util packages
+- A little copy is better than a dependency
+
+* Current challenges
+
+- Nested go modules and keeping mods in sync
+- VPN and downloading public modules from internet(some domains are blocked)
+- We have tried vendoring dependencies but decided against using it
+
+* Future Improvements
+
+- Setup a Go Proxy
+- Move nested go modules out whenever we can
+
+* Questions
+
+* References
+
+.link https://golang.org
+.link https://blog.golang.org/using-go-modules
+
+.image gomod/img/gopher.jpg 450 _
